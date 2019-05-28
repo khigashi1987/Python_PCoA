@@ -12,7 +12,7 @@ def Jaccard(X):
     '''
     X = np.array(X)
     n_samples = X.shape[0]
-    n_distance = n_samples * (n_samples - 1) / 2
+    n_distance = int(n_samples * (n_samples - 1) / 2)
     d_array = np.zeros((n_distance))
     for i, (idx1, idx2) in enumerate(itertools.combinations(range(n_samples),2)):
         v1_nonzero_index = np.flatnonzero(X[idx1])
@@ -34,7 +34,7 @@ def BrayCurtis(X):
     from scipy.spatial.distance import braycurtis
     X = np.array(X)
     n_samples = X.shape[0]
-    n_distance = n_samples * (n_samples - 1) / 2
+    n_distance = int(n_samples * (n_samples - 1) / 2)
     d_array = np.zeros((n_distance))
     for i, (idx1, idx2) in enumerate(itertools.combinations(range(n_samples),2)):
         d_array[i] = braycurtis(X[idx1], X[idx2])
@@ -52,7 +52,7 @@ def JSDivergence(X):
     from informationTheory import JSdivergence
     X = np.array(X)
     n_samples = X.shape[0]
-    n_distance = n_samples * (n_samples - 1) / 2
+    n_distance = int(n_samples * (n_samples - 1) / 2)
     d_array = np.zeros((n_distance))
     for i, (idx1, idx2) in enumerate(itertools.combinations(range(n_samples),2)):
         d_array[i] = JSdivergence(X[idx1], X[idx2])

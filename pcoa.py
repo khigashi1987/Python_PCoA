@@ -18,7 +18,7 @@ def executePCoA(data, distance_metric, drawBiplot, n_arrows, groupfile):
     
     matrix = data.values
     n_features, n_samples = matrix.shape
-    print n_features,'features, ',n_samples,'samples'
+    print(n_features,'features, ',n_samples,'samples')
     
     # compute distance
     if distance_metric == 'Jaccard':
@@ -53,13 +53,17 @@ def executePCoA(data, distance_metric, drawBiplot, n_arrows, groupfile):
         cor_pc2 = np.array([0.]*n_features)
         arrow_length = np.array([0.]*n_features)
         for i,current_feature in enumerate(data.index):
-            x = scipy.stats.pearsonr( data.loc[current_feature].values, positions[:,0] )[0]
-            y = scipy.stats.pearsonr( data.loc[current_feature].values, positions[:,1] )[0]
+            if np.ptp(data.loc[current_feature].values) == 0:
+                x = 0
+                y = 0
+            else:
+                x = scipy.stats.pearsonr( data.loc[current_feature].values, positions[:,0] )[0]
+                y = scipy.stats.pearsonr( data.loc[current_feature].values, positions[:,1] )[0]
             cor_pc1[i] = x
             cor_pc2[i] = y
             arrow_length[i] = np.sqrt( x**2 + y**2 )
         arrows = pd.DataFrame( np.hstack(( np.matrix(cor_pc1).T, np.matrix(cor_pc2).T, np.matrix(arrow_length).T )), index=data.index, columns=['x','y','len'])
-        sorted_arrows = arrows.sort(columns=['len'],ascending=False)
+        sorted_arrows = arrows.sort_values(by=['len'],ascending=False)
         # Top-{n_arrows} contributing features are drawed
         for name in sorted_arrows.index[:n_arrows]:
             ax.arrow(0.0,0.0, arrows.loc[name,'x'], arrows.loc[name,'y'], ec='k', alpha=0.2)
@@ -69,9 +73,11 @@ def executePCoA(data, distance_metric, drawBiplot, n_arrows, groupfile):
     if groupfile:
         group_names = []
         group2sample = {}
-        for line in open(groupfile):
-            sample,group = line.rstrip().split()
-            if group2sample.has_key(group):
+        df = pd.read_table(groupfile, header=None, index_col=0)
+        for sample in df.index:
+            # Use the value of second column (1) as a grouping category.
+            group = df.loc[sample, 1]
+            if group in group2sample:
                 group2sample[group].append(sample)
             else:
                 group2sample[group] = [sample]
@@ -83,7 +89,7 @@ def executePCoA(data, distance_metric, drawBiplot, n_arrows, groupfile):
                 continue
             ax.scatter(positions_with_sampleIndex.loc[group2sample[current_group],0],
                        positions_with_sampleIndex.loc[group2sample[current_group],1],
-                       s=100, marker=markers.next(), color=colors.next(), label='Group-%s'%current_group)
+                       s=100, marker=next(markers), color=next(colors), label='%s'%current_group)
         plt.legend(bbox_to_anchor=(0., 1.01, 1., 1.01), loc=3, ncol=6, mode="expand", borderaxespad=0.)
     else:
         for i,sample_name in enumerate(data.columns):
@@ -98,7 +104,7 @@ def executePCoA(data, distance_metric, drawBiplot, n_arrows, groupfile):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument( "-f", "--file", action="store", dest="data_file", help="matrix data file. rows are variables, columns are samples.")
+    parser.add_argument( "-f", "--file", action="store", dest="data_file", help="tab-separated text file. rows are variables, columns are samples.")
     parser.add_argument( "-d", "--distance_metric", action="store", dest="dist", choices=['Jaccard', 'BrayCurtis', 'JSD'], help="choose distance metric used for PCoA.")
     parser.add_argument( "-b", "--biplot", action="store_true", dest="biplot", default=False, help="output biplot (with calculating factor loadings).")
     parser.add_argument( "-n", "--number_of_arrows", action="store", type=int, dest="n_arrows", default=0, help="how many top-contributing arrows should be drawed.")
@@ -106,7 +112,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     
     if args.data_file == None:
-        print "ERROR: requires options"
+        print("ERROR: requires options")
         parser.print_help()
         quit()
     
@@ -118,4 +124,4 @@ if __name__ == '__main__':
     
     data = pd.read_table(datafile,index_col=0)
     executePCoA(data, distance_metric, drawBiplot, n_arrows, groupfile)
-    print 'done.'
+    print('done.')

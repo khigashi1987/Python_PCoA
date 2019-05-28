@@ -18,7 +18,7 @@ def entropy(seq):
  
 def KLdivergence(seqTarget, seqBackground):
     if len(seqTarget) != len(seqBackground):
-        print 'error: two sequences must be same length'
+        print('error: dimensions of two sequences must be same')
         return None
     freqTarget = convert2freq(seqTarget)
     freqBackground = convert2freq(seqBackground)
@@ -31,7 +31,7 @@ def KLdivergence(seqTarget, seqBackground):
  
 def JSdivergence(seq1, seq2, weights=(0.5,0.5)):
     if len(seq1) != len(seq2):
-        print 'error: two sequences must be same length'
+        print('error: dimensions of two sequences must be same')
         return None
     freq1 = convert2freq(seq1)
     freq2 = convert2freq(seq2)
